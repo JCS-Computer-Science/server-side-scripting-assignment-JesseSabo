@@ -10,7 +10,7 @@ let activeSessions={}
 
 server.get('/newgame', (req, res) =>{
     let newID = uuid.v4()
-    let newGame = {
+    let gameState = {
         wordToGuess: "apple",
         guesses: [],
         wrongLetters: [],
@@ -19,20 +19,16 @@ server.get('/newgame', (req, res) =>{
         remainingGuesses: 6,
         gameOver: false
     }
-    activeSessions[newID] = newGame
+    activeSessions[newID] = gameState
+    console.log(activeSessions)
     res.status(201)
     res.send({ sessionID: newID })
 })
 
 
 server.get('/gamestate', (req, res) => {
-    let gameState = {
-        guesses: [],
-        remainingGuesses: 6,
-        wrongLetters: [],
-        closeLetters: [],
-        rightLetters: [],
-    }
+    let gameState = activeSessions.sessionID
+    console.log(gameState)
     res.status(200)
     res.send({ gameState: gameState })
 })
