@@ -46,23 +46,46 @@ server.get('/gamestate', (req, res) => {
 server.post('/guess', (req, res) => {
     let sessionID = req.body.sessionID
     let guess = req.body.guess
-    let gameState = activeSessions[sessionID]
-    let answer = gameState.wordToGuess.split()
-    let letters = guess.split()
-    let wrong = []
-    let close = []
-    let right = []
-
-    for (let i = 0; i < letters.length; i++) {
-        if (letters[0] == answer[i]) {
-            right.push(letters[0])
+    let session = activeSessions[sessionID]
+    let answer = session.wordToGuess.split('')
+    let letters = guess.split('')
+    console.log(guess)
+    for (let i = 0; i < 5; i++) {
+        let start = i
+        if (letters[i] == answer[i]) {
+            session.rightLetters.push(letters[i])
+        } else if (letters[i] != answer[i]) {
+            let isWrong = false
+            for (let j = 0; j < letters.length - start; j++) {
+                if (letters[start] == answer[start + j]) {
+                    session.closeLetters.push(letters[start])
+                    isWrong = false
+                    j = letters.length - start
+                } else {
+                    isWrong = true
+                }
+            }
+            if (isWrong) {
+                session.wrongLetters.push(letters[start])
+            }
         }
     }
+    let gameState = {
+        guesses: session.guesses.push(guess),
+        wrongLetters: session.wrongLetters,
+        closeLetters: session.closeLetters,
+        rightLetters: session.rightLetters,
+        remainingGuesses: session.remainingGuesses -= 1
+    }
+    
+   
+    
+    
+    
 
-
-    // console.log(gameState)
+    console.log(gameState)
     res.status(201)
-    res.send({ sessionID , guess: guess })
+    res.send({ gameState: gameState })
 })
 
 
