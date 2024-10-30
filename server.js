@@ -46,13 +46,22 @@ server.get('/gamestate', (req, res) => {
 
 server.post('/guess', (req, res) => {
     let sessionID = req.body.sessionID
+    let badID = uuid.v4()
     let guess = req.body.guess
-    if (!sessionID) {
-        let error = "no session ID"
-        res.status(400)
-        res.send({ error })
+    let badSession
+    let session = activeSessions[sessionID]
+    if (session == undefined) {
+        if (!sessionID) {
+            let error = "no session ID"
+            res.status(400)
+            res.send({ error })
+        } else {
+            console.log("good")
+            let error = "invalid session ID"
+            res.status(404)
+            res.send({ error })
+        }
     } else {
-        let session = activeSessions[sessionID]
         let answer = session.wordToGuess.split('')
         let letters = guess.split('')
         let splitGuess = []
@@ -67,21 +76,38 @@ server.post('/guess', (req, res) => {
                 letter.value = letters[currentLetter]
                 letter.result = "RIGHT"
                 splitGuess.push(letter)
-                // for (let j = 0; j < session.closeLetters.length; j++) {
-                //     if (session.rightLetters[i] == session.closeLetters[j]) {
-                //         session.closeLetters.splice(j, 1)
-                //     }
-                // }
+                console.log(right)
+                console.log(close)
+                for (let j = 0; j < close.length; j++) {
+                    if (close[j] == letters[i]) {
+                       close.splice(j, 1)
+                    }
+                }
+                for (let j = 0; j < right.length - 1; j++) {
+                    if (right[right.length - 1] == right[j]) {
+                        right.splice(j, 1)
+                    }
+                }
             } else {
                 let isWrong = false
                 for (let j = 0; j < answer.length; j++) {
                     if (letters[currentLetter] == answer[j]) {
-                        session.closeLetters.push(letters[currentLetter])
+                        close.push(letters[currentLetter])
                         letter.value = letters[currentLetter]
                         letter.result = "CLOSE"
                         splitGuess.push(letter)
                         isWrong = false
                         j = answer.length
+                        for (let k = 0; k < right.length; k++) {
+                            if (letters[currentLetter] == right[k]) {
+                                close.splice(close.length - 1, 1)  
+                            }
+                        }
+                        for (let k = 0; k < close.length - 1; k++) {
+                            if (close[close.length - 1] == close[k]) {
+                                close.splice(k, 1)
+                            }
+                        }
                     } else {
                         isWrong = true
                     }
@@ -111,13 +137,11 @@ server.post('/guess', (req, res) => {
             } else {
                 gameState.gameOver = true
             }
-        }
-        
+        }      
         console.log(gameState.guesses)
         res.status(201)
         res.send({ gameState })
     }
-
 })
 
 
