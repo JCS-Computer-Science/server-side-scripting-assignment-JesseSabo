@@ -8,7 +8,7 @@ server.use(express.static('public'))
 //All your code goes here
 let activeSessions={}
 
-server.get('/newgame', (req, res) =>{
+server.get('/newgame', (req, res) =>{  //----------------------------------------------------------------GET/newgame
     let newID = uuid.v4()
     let gameState = {
         wordToGuess: "apple",
@@ -29,22 +29,33 @@ server.get('/newgame', (req, res) =>{
 })
 
 
-server.get('/gamestate', (req, res) => {
+server.get('/gamestate', (req, res) => {  //----------------------------------------------------------GET/gamestate
     let currentSession = req.query.sessionID
-    let gameState = {
-        guesses: activeSessions[currentSession].guesses,
-        wrongLetters: activeSessions[currentSession].wrongLetters,
-        closeLetters: activeSessions[currentSession].closeLetters,
-        rightLetters: activeSessions[currentSession].rightLetters,
-        remainingGuesses: activeSessions[currentSession].remainingGuesses
-
+    let session = activeSessions[currentSession]
+    if (session == undefined) {
+        if (!currentSession) {
+            let error = "no session ID"
+            res.status(400)
+            res.send({ error })
+        } else {
+            let error = "invalid session ID"
+            res.status(404)
+            res.send({ error })
+        }
+    } else {
+        let gameState = {
+            guesses: activeSessions[currentSession].guesses,
+            wrongLetters: activeSessions[currentSession].wrongLetters,
+            closeLetters: activeSessions[currentSession].closeLetters,
+            rightLetters: activeSessions[currentSession].rightLetters,
+            remainingGuesses: activeSessions[currentSession].remainingGuesses 
+        }
+        res.status(200)
+        res.send({ gameState: gameState })
     }
-
-    res.status(200)
-    res.send({ gameState: gameState })
 })
 
-server.post('/guess', (req, res) => {
+server.post('/guess', (req, res) => {  //--------------------------------------------------------------POST/guess
     let sessionID = req.body.sessionID
     let badID = uuid.v4()
     let guess = req.body.guess
@@ -56,91 +67,123 @@ server.post('/guess', (req, res) => {
             res.status(400)
             res.send({ error })
         } else {
-            console.log("good")
             let error = "invalid session ID"
             res.status(404)
             res.send({ error })
         }
     } else {
-        let answer = session.wordToGuess.split('')
-        let letters = guess.split('')
-        let splitGuess = []
-        console.log(guess)
-        for (let i = 0; i < 5; i++) {
-            let close = session.closeLetters
-            let right = session.rightLetters
-            let currentLetter = i
-            let letter = {}
-            if (letters[i] == answer[i]) {
-                session.rightLetters.push(letters[i])
-                letter.value = letters[currentLetter]
-                letter.result = "RIGHT"
-                splitGuess.push(letter)
-                console.log(right)
-                console.log(close)
-                for (let j = 0; j < close.length; j++) {
-                    if (close[j] == letters[i]) {
-                       close.splice(j, 1)
-                    }
-                }
-                for (let j = 0; j < right.length - 1; j++) {
-                    if (right[right.length - 1] == right[j]) {
-                        right.splice(j, 1)
-                    }
-                }
-            } else {
-                let isWrong = false
-                for (let j = 0; j < answer.length; j++) {
-                    if (letters[currentLetter] == answer[j]) {
-                        close.push(letters[currentLetter])
-                        letter.value = letters[currentLetter]
-                        letter.result = "CLOSE"
-                        splitGuess.push(letter)
-                        isWrong = false
-                        j = answer.length
-                        for (let k = 0; k < right.length; k++) {
-                            if (letters[currentLetter] == right[k]) {
-                                close.splice(close.length - 1, 1)  
-                            }
-                        }
-                        for (let k = 0; k < close.length - 1; k++) {
-                            if (close[close.length - 1] == close[k]) {
-                                close.splice(k, 1)
-                            }
-                        }
-                    } else {
-                        isWrong = true
-                    }
-                }
-                if (isWrong) {
-                    session.wrongLetters.push(letters[currentLetter])
+        // let alphabet = "abcdefghijklmnopqrstuvwxyz".split('')
+        // let guessLetters = guess.split('')
+        // let isLetter = true
+        // for (let i = 0; i < guessLetters.length; i++) {
+        //     let index = i
+        //     for (let j = 0; j < alphabet.length; j++) {
+        //         if (guessLetters[index] == alphabet[j]) {
+        //             isLetter = true
+        //         } else {
+        //             isLetter = false
+        //             i = guessLetters.length
+        //         }
+                
+               
+        //     }
+            
+        // }
+        // // console.log(isLetter)
+        // // console.log(guessLetters.length)
+        // if (guessLetters.length != 5 || isLetter == false) {
+        //     let error = "invalid guess"
+        //     res.status(400)
+        //     res.send({ error })
+        // } else {
+            let answer = session.wordToGuess.split('')
+            let letters = guess.split('')
+            let splitGuess = []
+            // console.log(letters.length)
+            for (let i = 0; i < 5; i++) {
+                let close = session.closeLetters
+                let right = session.rightLetters
+                let wrong = session.wrongLetters
+                let currentLetter = i
+                let letter = {}
+                if (letters[i] == answer[i]) {
+                    session.rightLetters.push(letters[i])
                     letter.value = letters[currentLetter]
-                    letter.result = "WRONG"
+                    letter.result = "RIGHT"
                     splitGuess.push(letter)
-                    isWrong = false
+                    console.log(right)
+                    console.log(close)
+                    for (let j = 0; j < close.length; j++) {
+                        if (close[j] == letters[i]) {
+                           close.splice(j, 1)
+                        }
+                    }
+                    for (let j = 0; j < right.length - 1; j++) {
+                        if (right[right.length - 1] == right[j]) {
+                            right.splice(j, 1)
+                        }
+                    }
+                } else {
+                    
+                    let isWrong = false
+                    for (let j = 0; j < answer.length; j++) {
+                        if (letters[currentLetter] == answer[j]) {
+                            close.push(letters[currentLetter])
+                            letter.value = letters[currentLetter]
+                            letter.result = "CLOSE"
+                            splitGuess.push(letter)
+                            isWrong = false
+                            j = answer.length
+                            for (let k = 0; k < right.length; k++) {
+                                if (letters[currentLetter] == right[k]) {
+                                    close.splice(close.length - 1, 1)  
+                                }
+                            }
+                            for (let k = 0; k < close.length - 1; k++) {
+                                if (close[close.length - 1] == close[k]) {
+                                    close.splice(k, 1)
+                                }
+                            }
+                        } else {
+                            isWrong = true
+                        }
+                    }
+                    if (isWrong) {
+                        session.wrongLetters.push(letters[currentLetter])
+                        letter.value = letters[currentLetter]
+                        letter.result = "WRONG"
+                        splitGuess.push(letter)
+                        for (let j = 0; j < wrong.length - 1; j++) {
+                            if (wrong[wrong.length - 1] == wrong[j]) {
+                                wrong.splice(j, 1)
+                            }
+                        }
+                        isWrong = false
+                    }
                 }
             }
-        }
-        session.guesses.push(splitGuess)
-        let gameState = {
-            guesses: session.guesses,
-            wrongLetters: session.wrongLetters,
-            closeLetters: session.closeLetters,
-            rightLetters: session.rightLetters,
-            remainingGuesses: session.remainingGuesses -= 1
-        }
-        let guesses = gameState.guesses
-        let lastGuess = guesses[guesses.length - 1]
-        for (let i = 0; i < 5; i++) {
-            if (lastGuess[i].result != "RIGHT") {
-                gameState.gameOver = false
-            } else {
-                gameState.gameOver = true
+            session.guesses.push(splitGuess)
+            let gameState = {
+                guesses: session.guesses,
+                wrongLetters: session.wrongLetters,
+                closeLetters: session.closeLetters,
+                rightLetters: session.rightLetters,
+                remainingGuesses: session.remainingGuesses -= 1
             }
-        }      
-        console.log(gameState.guesses)
-        res.status(201)
-        res.send({ gameState })
+            let guesses = gameState.guesses
+            let lastGuess = guesses[guesses.length - 1]
+            for (let i = 0; i < 5; i++) {
+                if (lastGuess[i].result != "RIGHT") {
+                    gameState.gameOver = false
+                } else {
+                    gameState.gameOver = true
+                }
+            }      
+            console.log(gameState.guesses)
+            res.status(201)
+            res.send({ gameState })
+                    
+        // }
     }
 })
 
