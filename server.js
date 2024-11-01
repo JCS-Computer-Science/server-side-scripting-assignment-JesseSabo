@@ -72,30 +72,44 @@ server.post('/guess', (req, res) => {  //---------------------------------------
             res.send({ error })
         }
     } else {
-        // let alphabet = "abcdefghijklmnopqrstuvwxyz".split('')
-        // let guessLetters = guess.split('')
-        // let isLetter = true
-        // for (let i = 0; i < guessLetters.length; i++) {
-        //     let index = i
-        //     for (let j = 0; j < alphabet.length; j++) {
-        //         if (guessLetters[index] == alphabet[j]) {
-        //             isLetter = true
-        //         } else {
-        //             isLetter = false
-        //             i = guessLetters.length
-        //         }
-                
-               
-        //     }
-            
-        // }
-        // // console.log(isLetter)
-        // // console.log(guessLetters.length)
-        // if (guessLetters.length != 5 || isLetter == false) {
-        //     let error = "invalid guess"
-        //     res.status(400)
-        //     res.send({ error })
-        // } else {
+        let alphabet = "abcdefghijklmnopqrstuvwxyz".split('')
+        let guessLetters = guess.split('')
+        let isLetter
+        console.log(guessLetters[0] == alphabet[22])
+        console.log(Number(guessLetters[4]))
+        // console.log(guessLetters[4].toString())
+        for (let i = 0; i < guessLetters.length; i++) {
+            let index = i
+            let throughAll = false
+            let isSymbol = false
+            for (let j = 0; j < alphabet.length; j++) {
+                if (j == alphabet.length - 1) {
+                    throughAll = true
+                }
+                if (guessLetters[index] == alphabet[j]) {
+                    isLetter = true
+                    j = alphabet.length
+                    console.log(isLetter)
+                } else {
+                    if (throughAll && !Number(guessLetters[index])) {
+                        isSymbol = true
+                    }
+                    if (Number(guessLetters[index]) || isSymbol) {
+                        isLetter = false
+                        console.log(isLetter)
+                        i = guessLetters.length
+                        j = alphabet.length
+                    }
+                }
+            }
+        }
+        // console.log(isLetter)
+        // console.log(guessLetters.length)
+        if (guessLetters.length != 5 || isLetter == false) {
+            let error = "invalid guess"
+            res.status(400)
+            res.send({ error })
+        } else {
             let answer = session.wordToGuess.split('')
             let letters = guess.split('')
             let splitGuess = []
@@ -183,7 +197,7 @@ server.post('/guess', (req, res) => {  //---------------------------------------
             res.status(201)
             res.send({ gameState })
                     
-        // }
+        }
     }
 })
 
