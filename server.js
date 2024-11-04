@@ -138,7 +138,6 @@ server.post('/guess', (req, res) => {  //---------------------------------------
                         }
                     }
                 } else {
-                    
                     let isWrong = false
                     for (let j = 0; j < answer.length; j++) {
                         if (letters[currentLetter] == answer[j]) {
@@ -226,6 +225,26 @@ server.delete('/reset', (req, res) => {
     
         res.status(200)
         res.send({ gameState })
+    }
+})
+
+server.delete('/delete', (req,res) => {
+    let currentSession = req.query.sessionID
+    let session = activeSessions[currentSession]
+    if (session == undefined) {
+        if (!currentSession) {
+            let error = "no session ID"
+            res.status(400)
+            res.send({ error })
+        } else {
+            let error = "invalid session ID"
+            res.status(404)
+            res.send({ error })
+        }
+    } else {
+        delete activeSessions[currentSession]
+        res.status(204)
+        res.send({ activeSessions })
     }
 })
 
