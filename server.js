@@ -201,6 +201,34 @@ server.post('/guess', (req, res) => {  //---------------------------------------
     }
 })
 
+server.delete('/reset', (req, res) => {
+    let currentSession = req.query.sessionID
+    let gameState = activeSessions[currentSession]
+    if (gameState == undefined) {
+        if (!currentSession) {
+            let error = "no session ID"
+            res.status(400)
+            res.send({ error })
+        } else {
+            let error = "invalid session ID"
+            res.status(404)
+            res.send({ error })
+        }
+    } else {
+        let noAnswer
+        gameState.wordToGuess = noAnswer
+        gameState.guesses = []
+        gameState.wrongLetters = []
+        gameState.closeLetters = []
+        gameState.rightLetters = []
+        gameState.remainingGuesses = 6
+        gameState.gameOver = false
+    
+        res.status(200)
+        res.send({ gameState })
+    }
+})
+
 
 
 //Do not remove this line. This allows the test suite to start
