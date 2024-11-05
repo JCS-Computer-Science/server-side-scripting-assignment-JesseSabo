@@ -8,10 +8,11 @@ server.use(express.static('public'))
 //All your code goes here
 let activeSessions={}
 
-server.get('/newgame', (req, res) =>{  //----------------------------------------------------------------GET/newgame
+server.get('/newgame', (req, res) =>{
+    let possibleWords = ["apple","hello","world","balls","sport","games","clone","moose","birds","goose","geese","storm","rings","signs","state","glass","hands","right","write","wrong","close","there","their","lunch","vinyl","seven","eight","lists","debug","lines","trees","three","frogs","timer","prime","chair","wheel","steel","cards","board","sword","marks","phone","piano","press","tires","print","month","years","space","phase","angle","angel","loose","house","mouse","route","ruote","sause","power","whale","tiger","koala","snake","brown","shark","peach","berry","axles","jumps","screw","water","laser","shade","earth","smoke","thing","march","sheep","llama","melon","towel","paper","stand","plane","truck","stuck","speak","store","stare","stair","shift","enter","pause","break","stake","anvil","ankle","about","zebra"]
     let newID = uuid.v4()
     let gameState = {
-        wordToGuess: "apple",
+        wordToGuess: possibleWords[Math.floor(Math.random() * possibleWords.length)],
         guesses: [],
         wrongLetters: [],
         closeLetters: [],
@@ -22,14 +23,11 @@ server.get('/newgame', (req, res) =>{  //---------------------------------------
     if (req.query.answer) {
         gameState.wordToGuess = req.query.answer
     }
-    
     activeSessions[newID] = gameState
     res.status(201)
     res.send({ sessionID: newID })
 })
-
-
-server.get('/gamestate', (req, res) => {  //----------------------------------------------------------GET/gamestate
+server.get('/gamestate', (req, res) => {
     let currentSession = req.query.sessionID
     let session = activeSessions[currentSession]
     if (session == undefined) {
@@ -54,12 +52,9 @@ server.get('/gamestate', (req, res) => {  //------------------------------------
         res.send({ gameState: gameState })
     }
 })
-
-server.post('/guess', (req, res) => {  //--------------------------------------------------------------POST/guess
+server.post('/guess', (req, res) => {
     let sessionID = req.body.sessionID
-    let badID = uuid.v4()
     let guess = req.body.guess
-    let badSession
     let session = activeSessions[sessionID]
     if (session == undefined) {
         if (!sessionID) {
@@ -75,9 +70,6 @@ server.post('/guess', (req, res) => {  //---------------------------------------
         let alphabet = "abcdefghijklmnopqrstuvwxyz".split('')
         let guessLetters = guess.split('')
         let isLetter
-        console.log(guessLetters[0] == alphabet[22])
-        console.log(Number(guessLetters[4]))
-        // console.log(guessLetters[4].toString())
         for (let i = 0; i < guessLetters.length; i++) {
             let index = i
             let throughAll = false
@@ -89,22 +81,18 @@ server.post('/guess', (req, res) => {  //---------------------------------------
                 if (guessLetters[index] == alphabet[j]) {
                     isLetter = true
                     j = alphabet.length
-                    console.log(isLetter)
                 } else {
                     if (throughAll && !Number(guessLetters[index])) {
                         isSymbol = true
                     }
                     if (Number(guessLetters[index]) || isSymbol) {
                         isLetter = false
-                        console.log(isLetter)
                         i = guessLetters.length
                         j = alphabet.length
                     }
                 }
             }
         }
-        // console.log(isLetter)
-        // console.log(guessLetters.length)
         if (guessLetters.length != 5 || isLetter == false) {
             let error = "invalid guess"
             res.status(400)
@@ -113,7 +101,6 @@ server.post('/guess', (req, res) => {  //---------------------------------------
             let answer = session.wordToGuess.split('')
             let letters = guess.split('')
             let splitGuess = []
-            // console.log(letters.length)
             for (let i = 0; i < 5; i++) {
                 let close = session.closeLetters
                 let right = session.rightLetters
@@ -125,8 +112,6 @@ server.post('/guess', (req, res) => {  //---------------------------------------
                     letter.value = letters[currentLetter]
                     letter.result = "RIGHT"
                     splitGuess.push(letter)
-                    console.log(right)
-                    console.log(close)
                     for (let j = 0; j < close.length; j++) {
                         if (close[j] == letters[i]) {
                            close.splice(j, 1)
@@ -191,15 +176,12 @@ server.post('/guess', (req, res) => {  //---------------------------------------
                 } else {
                     gameState.gameOver = true
                 }
-            }      
-            console.log(gameState.guesses)
+            }
             res.status(201)
-            res.send({ gameState })
-                    
+            res.send({ gameState })          
         }
     }
 })
-
 server.delete('/reset', (req, res) => {
     let currentSession = req.query.sessionID
     let gameState = activeSessions[currentSession]
@@ -221,13 +203,11 @@ server.delete('/reset', (req, res) => {
         gameState.closeLetters = []
         gameState.rightLetters = []
         gameState.remainingGuesses = 6
-        gameState.gameOver = false
-    
+        gameState.gameOver = false    
         res.status(200)
         res.send({ gameState })
     }
 })
-
 server.delete('/delete', (req,res) => {
     let currentSession = req.query.sessionID
     let session = activeSessions[currentSession]
@@ -247,8 +227,6 @@ server.delete('/delete', (req,res) => {
         res.send({ activeSessions })
     }
 })
-
-
 
 //Do not remove this line. This allows the test suite to start
 //multiple instances of your server on different ports
