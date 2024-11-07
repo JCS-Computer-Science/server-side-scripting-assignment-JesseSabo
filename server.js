@@ -3,13 +3,14 @@ const uuid = require("uuid")
 const server = express();
 server.use(express.json())
 server.use(express.static('public'))
+let api = "https://api.datamuse.com/words?sp=?????"
 
 
 //All your code goes here
 let activeSessions={}
 
 server.get('/newgame', (req, res) =>{
-    let possibleWords = ["apple","hello","world","balls","sport","games","clone","moose","birds","goose","geese","storm","rings","signs","state","glass","hands","right","write","wrong","close","there","their","lunch","vinyl","seven","eight","lists","debug","lines","trees","three","frogs","timer","prime","chair","wheel","steel","cards","board","sword","marks","phone","piano","press","tires","print","month","years","space","phase","angle","angel","loose","house","mouse","route","ruote","sause","power","whale","tiger","koala","snake","brown","shark","peach","berry","axles","jumps","screw","water","laser","shade","earth","smoke","thing","march","sheep","llama","melon","towel","paper","stand","plane","truck","stuck","speak","store","stare","stair","shift","enter","pause","break","stake","anvil","ankle","about","zebra"]
+    let possibleWords = ["apple","hello","world","balls","sport","games","clone","moose","birds","goose","geese","storm","rings","signs","state","glass","hands","right","write","wrong","close","there","their","lunch","vinyl","seven","eight","lists","debug","lines","trees","three","frogs","timer","prime","chair","wheel","steel","cards","board","sword","marks","phone","piano","press","tires","print","month","years","space","phase","angle","angel","loose","house","mouse","route","ruote","sause","power","whale","tiger","koala","snake","brown","shark","peach","berry","axles","jumps","screw","water","laser","shade","earth","smoke","thing","march","sheep","llama","melon","towel","paper","stand","plane","truck","stuck","speak","store","stare","stair","shift","enter","pause","break","stake","anvil","ankle","about","zebra","idiom","error","flash","micro","macro","dirve","might","lever","while","local","arrow","input","alarm","watch","clock","walls","spain","fruit","black","shoes","pupil","scene","index","basic","serve","using","venus","pluto","major","minor","orion","draco","latin","sufix","check","plant","brush","stick","alive","flute","bongo","pants","shirt","coats","plumb","panel","hours","money","bills","drill"]
     let newID = uuid.v4()
     let gameState = {
         wordToGuess: possibleWords[Math.floor(Math.random() * possibleWords.length)],
@@ -134,7 +135,7 @@ server.post('/guess', (req, res) => {
                             j = answer.length
                             for (let k = 0; k < right.length; k++) {
                                 if (letters[currentLetter] == right[k]) {
-                                    close.splice(close.length - 1, 1)  
+                                    close.splice(close.length - 1, 1)
                                 }
                             }
                             for (let k = 0; k < close.length - 1; k++) {
@@ -173,6 +174,7 @@ server.post('/guess', (req, res) => {
             for (let i = 0; i < 5; i++) {
                 if (lastGuess[i].result != "RIGHT") {
                     gameState.gameOver = false
+                    i = 5
                 } else {
                     gameState.gameOver = true
                 }
